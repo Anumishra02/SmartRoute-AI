@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard — AI Ticket Assistant</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h1>Your Tickets</h1>
+      <button id="logout" class="btn-logout">Log Out</button>
+    </div>
+
+    <section>
+      <h2>Create Ticket</h2>
+      <form id="ticketForm">
+        <label>Title<br><input name="title" required></label><br><br>
+        <label>Description<br><textarea name="description" rows="4" required></textarea></label><br><br>
+        <button type="submit" class="btn btn-primary">Create</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>All Tickets</h2>
+      <div id="tickets">Loading...</div>
+    </section>
+
+    <pre id="msg"></pre>
+  </main>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location = '/login.html';
+
+    document.getElementById('logout').addEventListener('click', () => {
+      localStorage.removeItem('token');
+      window.location = '/login.html';
+    });
+
+    async function loadTickets() {
+      try {
+        const res = await fetch('/api/tickets', { headers: { Authorization: `Bearer ${token}` } });
+        if (res.status === 401) return window.location = '/login.html';
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Error');
+        const div = document.getElementById('tickets');
+        if (!json.data?.length) {
+          div.innerHTML = '<p>No tickets yet.</p>';
+        } else {
+          div.innerHTML = json.data.map(t => `
+            <div class="ticket">
+              <strong>${t.title}</strong> — <span class="priority">${t.priority}</span>
+              <p>${t.description}</p>
+              <small>Status: ${t.status} | Assigned: ${t.assignedTo?.name || '—'}</small>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        document.getElementById('msg').textContent = 'Error loading tickets: ' + err.message;
+      }
+    }
+
+    document.getElementById('ticketForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      try {
+        const res = await fetch('/api/tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ title: f.title.value, description: f.description.value })
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Error');
+        f.reset();
+        loadTickets();
+      } catch (err) {
+        document.getElementById('msg').textContent = 'Error creating ticket: ' + err.message;
+      }
+    });
+
+    loadTickets();
+  </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Log In — AI Ticket Assistant</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main>
+    <h1>Log In</h1>
+    <form id="form">
+      <label>Email<br><input name="email" type="email" required></label><br><br>
+      <label>Password<br><input name="password" type="password" required></label><br><br>
+      <button type="submit">Log In</button>
+    </form>
+    <p><a href="/signup.html">Don't have an account?</a></p>
+    <pre id="msg"></pre>
+  </main>
+
+  <script>
+    document.getElementById('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: f.email.value, password: f.password.value })
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Error');
+        localStorage.setItem('token', json.token);
+        window.location = '/dashboard.html';
+      } catch (err) {
+        document.getElementById('msg').textContent = 'Error: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
