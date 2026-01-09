@@ -5,11 +5,6 @@
 Automated ticket classification, prioritization, and routing using AI-driven workflows.
 </p>
 
-<p align="center">
-<a href="https://www.youtube.com/watch?v=OtJV9SCyfuE&t=1123s">📺 Demo Video</a> |
-<a href="https://github.com/Anumishra02/SmartRoute-AI">💻 GitHub Repository</a>
-</p>
-
 <hr/>
 
 <h2>📌 Introduction</h2>
